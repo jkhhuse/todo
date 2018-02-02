@@ -95,3 +95,141 @@ $ nrm use cnpm
 - 终极解决方案：Async/Await
 
 ![nodejs 异步发展历程](./img/v2-0738714ff39490dc0e5b89899dcb6d15_b.jpg)
+
+#### Error-first Callback
+回调函数的第一个参数返回的error对象，如果error发生了，它会作为第一个err参数返回，如果没有，一般做法是返回null。  
+回调函数的第二个参数返回的是任何成功响应的结果数据。如果结果正常，没有error发生，err会被设置为null，并在第二个参数就出返回成功结果数据。  
+```js
+function(err, res) {  
+  // process the error and result
+}
+```
+#### EventEmitter  
+事件模块是 Node.js 内置的对观察者模式“发布/订阅”（publish/subscribe）的实现，通过`EventEmitter`属性，提供了一个构造函数。该构造函数的实例具有 `on` 方法，可以用来监听指定事件，并触发回调函数。任意对象都可以发布指定事件，被 `EventEmitter` 实例的 `on` 方法监听到。
+
+在node 6之后，可以直接使用`require('events')`类
+
+```js
+var EventEmitter = require('events')
+var util = require('util')
+
+var MyEmitter = function () {
+
+}
+
+util.inherits(MyEmitter, EventEmitter)
+
+const myEmitter = new MyEmitter();
+
+myEmitter.on('event', (a, b) => {
+  console.log(a, b, this);
+    // Prints: a b {}
+});
+
+myEmitter.emit('event', 'a', 'b');
+```
+#### Promise
+
+```js
+var promise = new Promise(function(resolve, reject) {
+  // do a thing, possibly async, then…
+
+  if (/* everything turned out fine */) {
+    resolve("Stuff worked!");
+  }
+  else {
+    reject(Error("It broke"));
+  }
+});
+
+promise.then(function(text){
+    console.log(text)// Stuff worked!
+    return Promise.reject(new Error('我是故意的'))
+}).catch(function(err){
+    console.log(err)
+});
+```
+
+#### Bluebird库  
+Bluebird是 Node.js 世界里性能最好的Promise/a+规范的实现模块，Api非常齐全，功能强大，是原生Promise外的不二选择。
+
+好处如下：
+
+- 避免Node.js内置Promise实现 问题，使用与所有版本兼容
+- 避免Node.js 4曾经出现的内存泄露问题
+- 内置更多扩展，timeout、 promisifyAll等，对Promise/A+规范提供了强有力的补充  
+
+#### Promise相关资料
+- Node.js最新技术栈之Promise篇  https://cnodejs.org/topic/560dbc826a1ed28204a1e7de
+- 理解 Promise 的工作原理 https://cnodejs.org/topic/569c8226adf526da2aeb23fd
+- Promise 迷你书 http://liubin.github.io/promises-book/
+
+#### Async/Await  
+Async/Await是异步操作的终极解决方案，Koa 2在node 7.6发布之后，立马发布了正式版本，并且推荐使用async函数来编写Koa中间件。  
+``` js
+exports.list = async (ctx, next) => {
+  try {
+    let students = await Student.getAllAsync();
+  
+    await ctx.render('students/index', {
+      students : students
+    })
+  } catch (err) {
+    return ctx.api_error(err);
+  }
+};
+```  
+它做了3件事儿
+
+- 通过await Student.getAllAsync();来获取所有的students信息。
+- 通过await ctx.render渲染页面
+- 由于是同步代码，使用try/catch做的异常处理
+
+是不是非常简单，现在Eggjs里也都是这样同步的代码。  
+
+Async函数要点如下：
+
+- Async函数语义上非常好
+- Async不需要执行器，它本身具备执行能力，不像Generator需要co模块
+- Async函数的异常处理采用try/catch和Promise的错误处理，非常强大
+- Await接Promise，Promise自身就足够应对所有流程了，包括async函数没有纯并行处理机制，也可以采用Promise里的all和race来补齐
+- Await释放Promise的组合能力，外加co和Promise的then，几乎没有不支持的场景
+
+综上所述
+
+- Async函数是趋势，如果Chrome 52. v8 5.1已经支持Async函数(https://github.com/nodejs/CTC/issues/7)了，Node.js支持还会远么？
+- Async和Generator函数里都支持promise，所以promise是必须会的。
+- Generator和yield异常强大，不过不会成为主流，所以学会基本用法和promise就好了，没必要所有的都必须会。
+- co作为Generator执行器是不错的，它更好的是当做Promise 包装器，通过Generator支持yieldable，最后返回Promise，是不是有点无耻？
+- Generator是迭代器，主要用于运算，不太适合用作流程控制。
+
+8. nodejs的业务能力
+一般，后端开发指的是 Web 应用开发中和视图渲染无关的部分，主要是和数据库交互为主的重业务型逻辑处理。但现在架构升级后，Node.js 承担了前后端分离重任之后，有了更多玩法。从带视图的**传统Web应用**和**面向Api接口应用**，到通过 RPC 调用封装对数据库的操作，到提供前端 Api 代理和网关，服务组装等，统称为**后端开发**，不再是以往只有和数据库打交道的部分才算后端。这样，就可以让前端工程师对开发过程可控，更好的进行调优和性能优化。
+
+Web编程核心
+
+- 异步流程控制（前面讲过了）
+- 基本框架 Koa或Express，新手推荐Express，毕竟资料多，上手更容易。如果有一定经验，推荐Koa，其实这些都是为了了解Web编程原理，尤其是中间件机制理解。
+- 数据库 mongodb或mysql都行，mongoose和Sequelize、bookshelf，TypeOrm等都非常不错。对于事物，不是Node.js的锅，是你选的数据库的问题。另外一些偏门，想node连sqlserver等估计还不成熟，我是不会这样用的。
+- 模板引擎， ejs，jade，nunjucks。理解原理最好。尤其是extend，include等高级用法，理解布局，复用的好处。其实前后端思路都是一样的。
+
+学习路线
+- 玩转 npm、gulp 这样的前端工具类（此时还是前端）
+- 使用 node 做前后端分离（此时还是前端）
+- express、koa 这类框架
+- jade、ejs 等模板引擎
+- nginx
+- 玩转【后端】异步流程处理（promise/es6的(generator|yield)/es7(async|await)）
+- 玩转【后端】mongodb、mysql 对应的 Node 模块
+
+标准：
+1. 基本的Node.js几个特性，比如事件驱动、非阻塞I/O、Stream等
+2. 异步流程控制相关，Promise是必问的
+3. 掌握1种以上Web框架，比如Express、Koa、Thinkjs、Restfy、Hapi等，会问遇到过哪些问题、以及前端优化等常识
+4. 数据库相关，尤其是SQL、缓存、Mongodb等
+5. 对于常见Node.js模块、工具的使用，观察一个人是否爱学习、折腾
+6. 是否熟悉linux，是否独立部署过服务器，有+分
+7. js语法和es6、es7，延伸CoffeeScript、TypeScript等，看看你是否关注新技术，有+分
+8. 对前端是否了解，有+分
+9. 是否参与过或写过开源项目，技术博客、有+分
+
