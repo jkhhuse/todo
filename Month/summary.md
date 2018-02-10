@@ -1,3 +1,13 @@
+很多事情不是你想不想去做，而是应不应该去做！
+
+### 2018/2/9 - 2018/2/14
+#### day1
+Angular5的升级记录
+css权威指南 (P104)
+#### day2
+css权威指南 (P125)
+
+
 ### 2018/1/31 - 2018/2/7
 #### day1
 nodejs 1h
@@ -16,8 +26,7 @@ css权威指南 0.3h (P78)
 nodejs实战 (P10)
 简单看了一下拖拽的原理
 #### day7
-css权威指南
+css权威指南 (P80)
 看了一下上传相关的库，formData、fileApi、ng2-file-upload
 chrome下拖拽失灵问题：https://superuser.com/questions/994283/google-chromes-drag-drop-feature-stopped-working
 
-很多事情不是你想不想去做，而是应不应该去做！
